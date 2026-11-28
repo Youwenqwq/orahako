@@ -1,0 +1,8 @@
+{"color":[
+  {"name":"start_window_background","value":"#ffffff"},
+  {"name":"schedule_card_background","value":"#f2f2f4"},
+  {"name":"schedule_card_tile","value":"#ffffff"},
+  {"name":"schedule_card_text","value":"#202124"},
+  {"name":"schedule_card_secondary","value":"#666870"},
+  {"name":"exam_card_accent","value":"#8054A3"}
+]}
