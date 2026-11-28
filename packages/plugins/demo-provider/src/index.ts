@@ -11,7 +11,7 @@ import { createDemoProvider, DEMO_DEFAULT_PASSWORD, DEMO_DEFAULT_USERNAME } from
 
 declare module "@orahako/sdk" {
   interface SlotMap {
-    "shell.banner": { kind: "list"; owner: Record<string, never> }
+    "shell.header.actions": { kind: "list"; owner: Record<string, never> }
   }
 }
 
@@ -37,50 +37,61 @@ export const demoProviderPlugin = definePlugin({
     kind: "provider",
     providerIndependent: true,
     entry: "index.js",
-    inject: ["providers", "provider", "session", "slots", "router", "i18n"],
+    inject: ["providers", "provider", "session", "slots", "i18n"],
     description: "免账号本地演示数据源，支持模拟登录、MFA、课表、成绩与考试预览",
   },
-  inject: ["providers", "provider", "session", "slots", "router", "i18n"] as const,
+  inject: ["providers", "provider", "session", "slots", "i18n"] as const,
   apply(ctx) {
-    const { providers, provider, session, slots, router, i18n } = ctx
+    const { providers, provider, session, slots, i18n } = ctx
     i18n.register(demoProviderDictionary)
 
-    let restoreSchoolId: string | null = null
-    const trackNonDemoSchool = (): void => {
-      const current = provider.getSnapshot().schoolId ?? session.getSnapshot().activeSchoolId
-      if (current && current !== DEMO_SCHOOL_ID) {
-        restoreSchoolId = current
+    const unregister = providers.registerProvider(DEMO_SCHOOL_ID, () => createDemoProvider())
+
+    const reloadApp = (): void => {
+      if (typeof window !== "undefined" && typeof window.location?.reload === "function") {
+        setTimeout(() => {
+          window.location.reload()
+        }, 50)
       }
     }
-    trackNonDemoSchool()
-    const unsubProvider = provider.state.subscribe(trackNonDemoSchool)
-    ctx.effect(() => () => unsubProvider())
 
-    const unregister = providers.registerProvider(DEMO_SCHOOL_ID, () => createDemoProvider())
-    ctx.effect(() => unregister)
+    const resetAwayFromDemo = (): void => {
+      const fallbackSchool =
+        providers.listProviders().find((id) => id !== DEMO_SCHOOL_ID) ?? null
+      if (fallbackSchool) {
+        provider.selectSchool(fallbackSchool)
+      }
+    }
 
     const exitDemo = async (): Promise<void> => {
       try {
         await provider.logout()
       } finally {
         session.clearCredential(DEMO_SCHOOL_ID)
+        session.setSessionExpired(false)
       }
-      const fallbackSchool =
-        (restoreSchoolId && providers.hasProvider(restoreSchoolId) ? restoreSchoolId : null) ??
-        providers.listProviders().find((id) => id !== DEMO_SCHOOL_ID) ??
-        null
-      if (fallbackSchool) {
-        provider.selectSchool(fallbackSchool)
-        void provider.initialize().catch(() => {})
-      }
-      router.replace({ route: "login" })
+      resetAwayFromDemo()
+      reloadApp()
     }
 
-    slots.inject("shell.banner", () =>
+    ctx.effect(() => () => {
+      const wasActiveDemo =
+        provider.getSnapshot().schoolId === DEMO_SCHOOL_ID ||
+        session.getSnapshot().activeSchoolId === DEMO_SCHOOL_ID
+      unregister()
+      session.clearCredential(DEMO_SCHOOL_ID)
+      if (wasActiveDemo) {
+        session.setSessionExpired(false)
+        resetAwayFromDemo()
+        reloadApp()
+      }
+    })
+
+    slots.inject("shell.header.actions", () =>
       slots.register(
         {
-          id: "demo-mode-banner",
-          slot: "shell.banner",
+          id: "demo-mode-indicator",
+          slot: "shell.header.actions",
           order: -50,
           dictionary: demoProviderDictionary,
           inject: (): DemoBannerInject => ({

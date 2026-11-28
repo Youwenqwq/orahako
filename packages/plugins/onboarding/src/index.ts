@@ -1,4 +1,3 @@
-import { getSlice } from "@orahako/academic-sdk"
 import type { PluginAnalyticsService } from "@orahako/ui-analytics"
 import {
   createObservableSource,
@@ -210,17 +209,10 @@ export const onboardingPlugin = definePlugin({
       if (!providers.hasProvider("demo")) {
         throw new Error("Demo provider is not available")
       }
-      const demoProvider = provider.selectSchool("demo")
+      session.clearCredential("demo")
+      session.setSessionExpired(false)
+      provider.selectSchool("demo")
       await provider.initialize()
-      const auth = getSlice(demoProvider, "auth")
-      if (auth) {
-        await auth.login({ username: "20260101", password: "demo" })
-      }
-      session.setCredential({
-        username: "20260101",
-        credential: "demo-session-token",
-        schoolId: "demo",
-      })
     }
 
     const checkNativePermission = async (
@@ -252,6 +244,7 @@ export const onboardingPlugin = definePlugin({
             hooks: {
               storeHydrated: store.hydrated,
               session: session.state,
+              provider: provider.state,
               schools,
               schoolsLoading,
               schoolsError,

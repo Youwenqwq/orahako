@@ -283,8 +283,6 @@ export interface LoginPageInject {
   readonly redirectAfterLogin: () => void
   readonly checkRateLimit: () => RateLimitResult
   readonly recordLoginAttempt: () => void
-  readonly hasDemoProvider?: () => boolean
-  readonly switchToDemo?: () => void
   readonly exitDemoSchool?: () => void
 }
 
@@ -663,6 +661,12 @@ export const LoginPage: SlotComponent<LoginPageProps> = (props) => {
       setRemember(true)
     }
   }, [props.canRemember, rememberHydrated, rememberedForSchool, activeSchoolId])
+
+  useEffect(() => {
+    if (activeSchoolId !== "demo") return
+    setUsername((current) => (current.length > 0 ? current : "20260101"))
+    setPassword((current) => (current.length > 0 ? current : "demo"))
+  }, [activeSchoolId])
 
   useEffect(() => {
     if (countdown <= 0) return
@@ -1281,7 +1285,7 @@ export const LoginPage: SlotComponent<LoginPageProps> = (props) => {
                       </Button>
                     </div>
 
-                    {activeSchoolId === "demo" ? (
+                    {activeSchoolId === "demo" && (
                       <div
                         data-login-demo-notice=""
                         className="flex flex-col items-center gap-2 pt-1 text-center"
@@ -1308,28 +1312,6 @@ export const LoginPage: SlotComponent<LoginPageProps> = (props) => {
                           </button>
                         )}
                       </div>
-                    ) : (
-                      props.hasDemoProvider?.() &&
-                      props.switchToDemo && (
-                        <div className="pt-1 text-center">
-                          <button
-                            type="button"
-                            data-login-try-demo=""
-                            disabled={loading}
-                            onClick={() => {
-                              props.switchToDemo?.()
-                              setUsername("20260101")
-                              setPassword("demo")
-                              setCaptcha("")
-                              setNeedsCaptcha(false)
-                              setCaptchaUrl(null)
-                            }}
-                            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                          >
-                            {t("login.tryDemo")}
-                          </button>
-                        </div>
-                      )
                     )}
                   </form>
                 </section>

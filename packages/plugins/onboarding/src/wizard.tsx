@@ -14,7 +14,7 @@ import {
   Puzzle,
   Store,
 } from "lucide-react"
-import type { SessionSnapshot } from "@orahako/academic-sdk"
+import type { ProviderRuntimeSnapshot, SessionSnapshot } from "@orahako/academic-sdk"
 import type { DerivedComponentProps, ObservableSource, SlotComponent } from "@orahako/sdk"
 import { Badge, Button, cn, Spinner, Switch } from "@orahako/ui-primitives"
 import type { OnboardingDictionary, OnboardingStoreInstance } from "./store"
@@ -407,6 +407,7 @@ export interface OnboardingWizardInject {
   readonly hooks: {
     readonly storeHydrated: ObservableSource<boolean>
     readonly session: ObservableSource<SessionSnapshot>
+    readonly provider: ObservableSource<ProviderRuntimeSnapshot>
     readonly schools: ObservableSource<readonly OnboardingSchoolChoice[]>
     readonly schoolsLoading: ObservableSource<boolean>
     readonly schoolsError: ObservableSource<string | null>
@@ -444,6 +445,7 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
   const { t, locale, useStore, actions } = props
   const storeHydrated = props.useStoreHydrated()
   const session = props.useSession()
+  const providerState = props.useProvider()
   const schools = props.useSchools()
   const schoolsLoading = props.useSchoolsLoading()
   const schoolsError = props.useSchoolsError()
@@ -499,8 +501,10 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
     isNative,
   } = props
   const hydrated = storeHydrated && session.hasHydrated
-  const inDemoSession = session.isAuthenticated && session.activeSchoolId === "demo"
-  const visible = preview || (hydrated && !completed && !inDemoSession)
+  const inDemoMode =
+    providerState.schoolId === "demo" ||
+    (session.isAuthenticated && session.activeSchoolId === "demo")
+  const visible = preview || exiting || (hydrated && !completed && !inDemoMode)
   const schoolLocked = !preview && storedSchoolId !== null
   const showMarketStep = props.hasMarket?.() ?? false
   const activeStep: "welcome" | "agreement" | "market" | "school" | "permissions" = schoolLocked
@@ -682,16 +686,29 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
   ]
 
   async function handleEnterDemo() {
+    if (exiting || enteringDemo) return
     if (preview) {
-      props.exitPreview?.()
+      finish()
       return
     }
-    if (!props.enterDemoMode || enteringDemo) return
+    if (!props.enterDemoMode) return
     setEnteringDemo(true)
     setDemoError(false)
     try {
+      if (prefersReducedMotion()) {
+        await props.enterDemoMode()
+        dispatchOnboardingCompleting()
+        return
+      }
+      setExiting(true)
       await props.enterDemoMode()
+      dispatchOnboardingCompleting()
+      exitTimerRef.current = setTimeout(() => {
+        exitTimerRef.current = null
+        setExiting(false)
+      }, EXIT_DURATION_MS)
     } catch {
+      setExiting(false)
       setDemoError(true)
     } finally {
       setEnteringDemo(false)
@@ -718,6 +735,7 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
     exitTimerRef.current = setTimeout(() => {
       exitTimerRef.current = null
       completeAction()
+      setExiting(false)
     }, EXIT_DURATION_MS)
   }
 
@@ -798,7 +816,6 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
               <Button
                 type="button"
                 size="lg"
-                disabled={enteringDemo}
                 onClick={() => setStep("agreement")}
                 className="group h-12 w-full rounded-xl bg-foreground text-background transition-all duration-200 hover:bg-foreground/90 active:scale-[0.985]"
               >
@@ -808,25 +825,6 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
                   className="size-4 transition-transform duration-200 group-hover:translate-x-1"
                 />
               </Button>
-              {props.hasDemoProvider?.() && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  data-onboarding-try-demo=""
-                  disabled={enteringDemo}
-                  onClick={() => void handleEnterDemo()}
-                  className="h-10 w-full rounded-xl text-muted-foreground hover:text-foreground"
-                >
-                  {enteringDemo && <Spinner data-icon="inline-start" />}
-                  {t("tryDemo")}
-                </Button>
-              )}
-              {demoError && (
-                <p role="alert" className="text-xs text-destructive">
-                  {t("tryDemoFailed")}
-                </p>
-              )}
             </div>
           </section>
         ) : (
@@ -1129,7 +1127,7 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
 
                 <Button
                   className="mt-2.5 h-11 w-full rounded-xl bg-foreground text-background transition-all hover:bg-foreground/90 active:scale-[0.985]"
-                  disabled={installing || !activeSchoolId}
+                  disabled={installing || enteringDemo || !activeSchoolId}
                   onClick={() => void selectSchoolAndContinue()}
                 >
                   {installing ? <Spinner data-icon="inline-start" /> : null}
@@ -1138,6 +1136,28 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
                   ) : null}
                   {installing ? t("installing") : t("confirm")}
                 </Button>
+
+                {props.hasDemoProvider?.() && (
+                  <div className="mt-3 flex flex-col items-center gap-1.5">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      data-onboarding-try-demo=""
+                      disabled={installing || enteringDemo}
+                      onClick={() => void handleEnterDemo()}
+                      className="h-9 w-full rounded-xl text-muted-foreground hover:text-foreground"
+                    >
+                      {enteringDemo && <Spinner data-icon="inline-start" />}
+                      {t("tryDemo")}
+                    </Button>
+                    {demoError && (
+                      <p role="alert" className="text-xs text-destructive">
+                        {t("tryDemoFailed")}
+                      </p>
+                    )}
+                  </div>
+                )}
               </section>
             ) : (
               <section key="permissions" data-onboarding-step="permissions">
