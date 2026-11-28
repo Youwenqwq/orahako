@@ -113,6 +113,7 @@ const CATEGORY_LABEL_KEYS: Readonly<
   Record<PluginCategory, Extract<TranslationKeyOf<PluginsDictionary>, `category.${string}`>>
 > = {
   appearance: "category.appearance",
+  campus: "category.campus",
   toybox: "category.toybox",
   academic: "category.academic",
   provider: "category.provider",

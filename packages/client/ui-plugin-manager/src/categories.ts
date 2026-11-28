@@ -1,6 +1,12 @@
 import type { PluginKind } from "@orahako/sdk"
 
-export type PluginCategory = "appearance" | "toybox" | "academic" | "provider" | "system"
+export type PluginCategory =
+  | "appearance"
+  | "campus"
+  | "toybox"
+  | "academic"
+  | "provider"
+  | "system"
 
 export interface PluginCategoryInput {
   readonly kind?: PluginKind
@@ -28,6 +34,9 @@ export function pluginCategory(plugin: PluginCategoryInput): PluginCategory {
   ) {
     return "system"
   }
+  if (plugin.categories?.includes("campus")) {
+    return "campus"
+  }
   if (plugin.categories?.includes("toybox")) {
     return "toybox"
   }
@@ -36,6 +45,7 @@ export function pluginCategory(plugin: PluginCategoryInput): PluginCategory {
 
 const CATEGORY_ORDER: readonly PluginCategory[] = [
   "appearance",
+  "campus",
   "toybox",
   "academic",
   "provider",

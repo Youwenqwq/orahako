@@ -247,16 +247,18 @@ describe("@orahako/ui-plugin-manager", () => {
     expect(pluginCategory({ kind: "shell" })).toBe("appearance")
     expect(pluginCategory({ kind: "feature", required: true })).toBe("system")
     expect(pluginCategory({ kind: "theme" })).toBe("appearance")
+    expect(pluginCategory({ kind: "feature", categories: ["campus"] })).toBe("campus")
     expect(pluginCategory({ kind: "feature", categories: ["toybox"] })).toBe("toybox")
     expect(pluginCategory({ kind: "feature" })).toBe("academic")
 
     const grouped = groupByPluginCategory([
       { id: "p", kind: "provider" as const },
       { id: "a", kind: "feature" as const },
+      { id: "c", kind: "feature" as const, categories: ["campus"] },
       { id: "s", kind: "shell" as const },
       { id: "t", kind: "theme" as const },
     ])
-    expect(grouped.map((g) => g.id)).toEqual(["appearance", "academic", "provider"])
+    expect(grouped.map((g) => g.id)).toEqual(["appearance", "campus", "academic", "provider"])
   })
 
   it("registers plugins page & navigation, renders installed/shells/market/bundles, and supports sideload & uninstall", async () => {

@@ -71,6 +71,7 @@ export const pluginsDictionary = defineDictionary({
     category: {
       provider: "提供商",
       academic: "教务",
+      campus: "校园生活",
       toybox: "玩具箱",
       system: "系统",
       appearance: "外观",
@@ -147,6 +148,7 @@ export const pluginsDictionary = defineDictionary({
     category: {
       provider: "Providers",
       academic: "Academic",
+      campus: "Campus Life",
       toybox: "Toybox",
       system: "System",
       appearance: "Appearance",
