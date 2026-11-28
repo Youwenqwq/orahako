@@ -1,6 +1,6 @@
 {
   "name": "@orahako/academic-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Optional academic domain contracts and slice types for Orahako provider plugins.",
   "license": "GPL-3.0-only",
   "repository": {

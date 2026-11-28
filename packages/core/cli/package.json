@@ -1,6 +1,6 @@
 {
   "name": "@orahako/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Plugin packer and developer CLI for Orahako API v1 plugins.",
   "license": "GPL-3.0-only",
   "repository": {
