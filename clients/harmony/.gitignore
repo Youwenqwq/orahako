@@ -1,0 +1,119 @@
+# dependencies
+/harmony/node_modules/
+/harmony/oh_modules/
+/harmony/.hvigor/
+/harmony/entry/build/
+/harmony/build/
+/harmony/local.properties
+/harmony/resource-verification.json
+/harmony/entry/src/main/resources/rawfile/www/
+/harmony/entry/src/main/resources/rawfile/security-policy.json
+/harmony/**/*.p12
+/harmony/**/*.pfx
+/harmony/**/*.p7b
+/harmony/**/*.key
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+/dist
+/.hvigor/
+/.codex-harmony-diagnostic/
+/artifacts/
+*.hap
+*.hsp
+
+/android/*
+!/android/build.gradle
+!/android/variables.gradle
+!/android/gradle/
+/android/gradle/*
+!/android/gradle/wrapper/
+!/android/gradlew
+!/android/gradlew.bat
+!/android/settings.gradle
+!/android/gradle.properties
+!/android/capacitor.settings.gradle
+!/android/app/
+/android/app/*
+!/android/app/build.gradle
+!/android/app/capacitor.build.gradle
+!/android/app/proguard-rules.pro
+!/android/app/.gitignore
+!/android/app/src/
+/android/app/src/*
+!/android/app/src/main/
+/android/app/src/main/assets/public/
+
+# misc
+.DS_Store
+.idea
+.vscode
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# env files
+.env
+.env*.local
+.env.*
+!.env.example
+*.pem
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Claude Code
+.claude/
+.agents/
+/docs/
+capacitor_*_*doc.md
+skills-lock.json
+
+# Android
+*.keystore
+*.jks
+/gradle.properties
+
+# Website build artifacts
+website/node_modules/
+website/dist/
+website/.astro/
+website/src/data/changelog.json
+website/public/updates
+
+# Tencent Cloud EdgeOne
+.edgeone/*
+.tef_dist/*
+
+# EdgeOne build artifacts
+website/.edgeone/
+
+# Backup files
+*.bak
+
+# Build tool error output artifacts
+/Could
+/Failed
+/Toolchain
+
+# Should be ignored test file
+lib/fees/meter/client.test.ts

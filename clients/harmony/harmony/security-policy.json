@@ -1,0 +1,393 @@
+{
+  "version": 1,
+  "description": "Reviewed school endpoints and Skbird community endpoints, with separate credentials and HTTPS media. No proxy or unlisted actions.",
+  "skbirdRoutes": [
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/thread/hot" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/thread/toplist" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/thread/v2/list" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/thread/rewardlist" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/catelist" },
+    { "origin": "http://api.app.zanao.com", "method": "POST", "path": "/thread/v2/searchoptions" },
+    { "origin": "http://api.app.zanao.com", "method": "POST", "path": "/thread/v2/search" },
+    { "origin": "http://api.app.zanao.com", "method": "POST", "path": "/thread/info" },
+    { "origin": "http://api.app.zanao.com", "method": "POST", "path": "/thread/mark/post" },
+    { "origin": "http://api.app.zanao.com", "method": "POST", "path": "/thread/like" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/thread/mark/list" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/user/info" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/user/statinfo" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/msg/list" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/msg/newlist" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/msg/unum" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/msg/like/stat" },
+    { "origin": "http://api.app.zanao.com", "method": "GET", "path": "/comment/list" }
+  ],
+  "mediaRoutes": [
+    { "origin": "https://b1.cdn.zanao.com", "pathPrefix": "/upload/" },
+    { "origin": "https://thirdwx.qlogo.cn", "pathPrefix": "/mmopen/" },
+    { "origin": "https://thirdwx.qlogo.cn", "pathPrefix": "/mmhead/" }
+  ],
+  "appIds": [
+    "d71f7b57b4f348368f06c3e9a2a0988f",
+    "377b6493556d4f0b86d116ca00cd1b6e",
+    "f5bc7667030c4af9b31f212b659a1f62",
+    "9ed0501165cd47209b105356cfa2e17a",
+    "eb858365ce9a44b283b2d365a392ad47",
+    "2d855fd0484047518ac8087912ca71e0",
+    "b5f84a8ed330481ca1efd1753d95a504",
+    "4855b7a54e50498580017c61a1dc94c8",
+    "74506a67ea1c4bf3bb54eefa6e196779",
+    "5db54fd366204007af34267396897b24",
+    "d4145d3276744d9da8bf609da4702ae8"
+  ],
+  "routes": [
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "GET",
+      "path": "/jwmobile/auth/index"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "GET",
+      "path": "/jwmobile/biz/v410/"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwmobile/biz/v410/lesson/queryCurrentLesson"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwmobile/biz/v410/signin/detail"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwmobile/biz/v410/signin/querySigninDetail"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwmobile/biz/v410/signin/sign"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/authserver/login"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/authserver/logout"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/authserver/index.do"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/authserver/checkNeedCaptcha.htl"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/authserver/getCaptcha.htl"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/authserver/reAuthCheck/reAuthLogin.do"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/authserver/reAuthCheck/reAuthLoginView.do"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/authserver/reAuthCheck/reAuthIndex.do"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "GET",
+      "path": "/personalInfo/personCenter/index.html"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "POST",
+      "path": "/authserver/login"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "POST",
+      "path": "/authserver/reAuthCheck/changeReAuthType.do"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "POST",
+      "path": "/authserver/dynamicCode/getDynamicCodeByReauth.do"
+    },
+    {
+      "origin": "https://cer.ysu.edu.cn",
+      "method": "POST",
+      "path": "/authserver/reAuthCheck/reAuthSubmit.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "GET",
+      "path": "/jwapp/sys/emaphome/portal/index.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "GET",
+      "path": "/jwapp/sys/emaphome/appShow.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/cjcx/modules/cjcx/xscjcx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/cjcx/modules/cjcx/cxzxfaxfjd.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/cjcx/modules/cjcx/jxbcjtjcx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/cjcx/modules/cjcx/jxbcjfbcx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/cjcx/modules/cjcx/jxbxspmcx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/wdkb/modules/xskcb/cxxszhxqkb.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/wdkb/modules/xskcb/xswpkc.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/wdkb/modules/xskcb/xsdkkc.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/syxkjg/modules/wdkb/cxxskb.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/syxkjg/modules/wdkb/cxxsllsywpk.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/wdkb/modules/jshkcb/jc.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/wdkb/modules/jshkcb/dqzc.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/wdkb/modules/xskcb/cxxljc.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/kcbcx/KbcxController/querybjkb.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/xsjbxxgl/modules/xsjbxx/cxxsjbxxlb.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/xywccx/modules/xywccx/cxxsscfa.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/xsfacx/modules/pyfacxepg/grpyfacx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/jwpubapp/modules/pyfa/kzkccx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/xyyj/modules/xsxyyjjg/cxxsyjpcjg.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/studentWdksapApp/WdksapController/cxxsksap.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/studentWdksapApp/modules/wdksap/dqxnxq.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/pjapp/api/wdpj/getPjlx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/pjapp/api/wdpj/getDpwj.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/pjapp/api/wdpj/getWjtxxx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/pjapp/api/wdpj/calculateQuestionnaireAnswerScore.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/pjapp/api/wdpj/commitQuestionnaireAnswer.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/bkbl/modules/bkbm/cxxtcs.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/bkbl/modules/bkbm/cxbkkspc.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/bkbl/modules/bkbm/cxbkbmmx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/kcbcx/modules/bjkcb/bjcx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/kcbcx/modules/jskcb/jscx.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/sys/kcbcx/KbcxController/queryjaskb.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/code/c1e19f4d-94e0-464f-bb7b-d70d0517150c.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/code/49a86828-aef9-4a48-b26f-01149dac72d7.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/code/87a9226a-6e44-44cc-9743-c081a8f9cb9b.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/code/83a986fc-e677-400e-99a4-c7bb39c2ca35.do"
+    },
+    {
+      "origin": "https://jwxt.ysu.edu.cn",
+      "method": "POST",
+      "path": "/jwapp/code/82101c45-a7d3-414d-988b-24744db9f5ea.do"
+    },
+    {
+      "origin": "https://epay.ysu.edu.cn",
+      "method": "GET",
+      "path": "/pay/allPay.html"
+    },
+    {
+      "origin": "https://epay.ysu.edu.cn",
+      "method": "GET",
+      "path": "/pay/index.html"
+    },
+    {
+      "origin": "https://ehall.ysu.edu.cn",
+      "method": "GET",
+      "path": "/publicapp/sys/myyktzd/index.do"
+    },
+    {
+      "origin": "https://ehall.ysu.edu.cn",
+      "method": "POST",
+      "path": "/publicapp/sys/myyktzd/mySmartCard/loadSmartCardBillMain.do"
+    },
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/index.html"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/About/UnifiedAuthenticationLogin"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/System/User/Login"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/System/User/LoginRole"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/System/Home/Index"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/XueFen/Summary"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/XueFen/SummaryQuery/Index"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "GET", "path": "/XueFen/Enroll/Index"},
+    {"origin": "https://ldxt.ysu.edu.cn", "method": "POST", "path": "/About/UnifiedAuthenticationLogin"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_pt/UnifiedAuth/CASLogin"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_pt"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_pt/"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_pt/System/User/LoginRole"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_pt/Error"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_pt/System/Home/Index"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_pt/System/Platform/AccessSubsystem/e3090712-0609-404a-ade1-6a76ad8d90b1"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/authserver/access"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/System/User/LoginRole"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/System/User/Login"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/System/Home/Index"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/XueFen/Declare/Index"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/XueFen/Summary"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/XueFen/SummaryQuery/Index"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/JingSai/Declare/Index"},
+    {"origin": "http://202.206.247.49", "method": "GET", "path": "/ysu_xf/HuoDongKu/Declare/Index"},
+    {"origin": "http://xgxt.ysu.edu.cn", "method": "GET", "path": "/xsfw/sys/zhcptybbapp/*default/index.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "GET", "path": "/xsfw/sys/zhcptybbapp/*default/index.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/swpubapp/indexmenu/getAppConfig.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/swpubapp/userinfo/setXgCommonAppRole.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/zhcptybbapp/modules/evaluationApplyController/getCpxnxq.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/zhcptybbapp/modules/evaluationApplyController/getEvaluationResultsByXn.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/zhcptybbapp/modules/evaluationApplyController/getYearCjStatic.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/zhcptybbapp/modules/evaluationApplyController/getRedar.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/zhcptybbapp/modules/zccj/tjsqhqxqzbxx.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/zhcptybbapp/modules/evaluationBjhpController/getFiveYears.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/zhcptybbapp/modules/evaluationBjhpController/getMrXn.do"},
+    {"origin": "https://xgxt.ysu.edu.cn", "method": "POST", "path": "/xsfw/sys/zhcptybbapp/modules/public/xycjbg.do"},
+    {"origin": "https://xqh5.17wanxiao.com", "method": "POST", "path": "/smartWaterAndElectricityService/SWAEEncryptServlet"}
+  ]
+}

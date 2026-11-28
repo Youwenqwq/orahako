@@ -1,0 +1,7 @@
+{"string":[
+  {"name":"app_name","value":"燕大终端"},
+  {"name":"schedule_card_title","value":"今日课表"},
+  {"name":"schedule_card_description","value":"在桌面查看今日剩余课程、节次和教室"},
+  {"name":"exam_card_title","value":"考试通知"},
+  {"name":"exam_card_description","value":"在桌面查看待考科目、时间、考场和座位"}
+]}

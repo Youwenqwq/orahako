@@ -193,6 +193,7 @@
     "node_modules",
     "website",
     "android",
+    "clients/harmony",
     "packages/core",
     "packages/runtime",
     "packages/edu",
