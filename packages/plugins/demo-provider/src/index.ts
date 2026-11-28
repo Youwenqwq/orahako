@@ -1,9 +1,15 @@
 import "@orahako/academic-sdk"
 import { definePlugin, PLUGIN_API_VERSION } from "@orahako/sdk"
 import {
+  DemoLoginFooter,
   DemoModeBanner,
+  DemoOnboardingEntry,
   demoProviderDictionary,
   type DemoBannerInject,
+  type DemoLoginFooterInject,
+  type DemoLoginFooterOwner,
+  type DemoOnboardingEntryInject,
+  type DemoOnboardingEntryOwner,
   type DemoProviderDictionary,
 } from "./banner"
 import { DEMO_SCHOOL_ID } from "./data"
@@ -12,6 +18,8 @@ import { createDemoProvider, DEMO_DEFAULT_PASSWORD, DEMO_DEFAULT_USERNAME } from
 declare module "@orahako/sdk" {
   interface SlotMap {
     "shell.header.actions": { kind: "list"; owner: Record<string, never> }
+    "onboarding.school.footer": { kind: "list"; owner: DemoOnboardingEntryOwner }
+    "auth.login.footer": { kind: "list"; owner: DemoLoginFooterOwner }
   }
 }
 
@@ -22,9 +30,15 @@ export {
   DEMO_DEFAULT_PASSWORD,
   DEMO_DEFAULT_USERNAME,
   DEMO_SCHOOL_ID,
+  DemoLoginFooter,
   DemoModeBanner,
+  DemoOnboardingEntry,
   demoProviderDictionary,
   type DemoBannerInject,
+  type DemoLoginFooterInject,
+  type DemoLoginFooterOwner,
+  type DemoOnboardingEntryInject,
+  type DemoOnboardingEntryOwner,
   type DemoProviderDictionary,
 }
 
@@ -45,9 +59,10 @@ export const demoProviderPlugin = definePlugin({
     const { providers, provider, session, slots, i18n } = ctx
     i18n.register(demoProviderDictionary)
 
-    const unregister = providers.registerProvider(DEMO_SCHOOL_ID, () => createDemoProvider())
-
+    let reloading = false
     const reloadApp = (): void => {
+      if (reloading) return
+      reloading = true
       if (typeof window !== "undefined" && typeof window.location?.reload === "function") {
         setTimeout(() => {
           window.location.reload()
@@ -56,22 +71,41 @@ export const demoProviderPlugin = definePlugin({
     }
 
     const resetAwayFromDemo = (): void => {
-      const fallbackSchool =
-        providers.listProviders().find((id) => id !== DEMO_SCHOOL_ID) ?? null
+      const fallbackSchool = providers.listProviders().find((id) => id !== DEMO_SCHOOL_ID) ?? null
       if (fallbackSchool) {
         provider.selectSchool(fallbackSchool)
       }
+    }
+
+    const teardownDemoAndReload = (): void => {
+      session.clearCredential(DEMO_SCHOOL_ID)
+      session.setSessionExpired(false)
+      resetAwayFromDemo()
+      reloadApp()
+    }
+
+    const unregister = providers.registerProvider(DEMO_SCHOOL_ID, () =>
+      createDemoProvider({
+        onLogout: teardownDemoAndReload,
+      })
+    )
+
+    const enterDemoMode = async (): Promise<void> => {
+      if (!providers.hasProvider(DEMO_SCHOOL_ID)) {
+        throw new Error("Demo provider is not available")
+      }
+      session.clearCredential(DEMO_SCHOOL_ID)
+      session.setSessionExpired(false)
+      provider.selectSchool(DEMO_SCHOOL_ID)
+      await provider.initialize()
     }
 
     const exitDemo = async (): Promise<void> => {
       try {
         await provider.logout()
       } finally {
-        session.clearCredential(DEMO_SCHOOL_ID)
-        session.setSessionExpired(false)
+        teardownDemoAndReload()
       }
-      resetAwayFromDemo()
-      reloadApp()
     }
 
     ctx.effect(() => () => {
@@ -81,11 +115,39 @@ export const demoProviderPlugin = definePlugin({
       unregister()
       session.clearCredential(DEMO_SCHOOL_ID)
       if (wasActiveDemo) {
-        session.setSessionExpired(false)
-        resetAwayFromDemo()
-        reloadApp()
+        teardownDemoAndReload()
       }
     })
+
+    slots.inject("onboarding.school.footer", () =>
+      slots.register(
+        {
+          id: "demo-onboarding-entry",
+          slot: "onboarding.school.footer",
+          order: 10,
+          dictionary: demoProviderDictionary,
+          inject: (): DemoOnboardingEntryInject => ({
+            enterDemoMode,
+          }),
+        },
+        DemoOnboardingEntry
+      )
+    )
+
+    slots.inject("auth.login.footer", () =>
+      slots.register(
+        {
+          id: "demo-login-footer",
+          slot: "auth.login.footer",
+          order: 10,
+          dictionary: demoProviderDictionary,
+          inject: (): DemoLoginFooterInject => ({
+            exitDemo,
+          }),
+        },
+        DemoLoginFooter
+      )
+    )
 
     slots.inject("shell.header.actions", () =>
       slots.register(

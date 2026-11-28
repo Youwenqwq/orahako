@@ -53,7 +53,11 @@ import {
 export const DEMO_DEFAULT_USERNAME = "20260101"
 export const DEMO_DEFAULT_PASSWORD = "demo"
 
-export function createDemoProvider(): SchoolProvider {
+export interface CreateDemoProviderOptions {
+  readonly onLogout?: () => void
+}
+
+export function createDemoProvider(options?: CreateDemoProviderOptions): SchoolProvider {
   let authenticated = false
   let currentUsername = DEMO_DEFAULT_USERNAME
   let pendingMfaUsername: string | null = null
@@ -293,6 +297,7 @@ export function createDemoProvider(): SchoolProvider {
     async logout(): Promise<void> {
       authenticated = false
       pendingMfaUsername = null
+      options?.onLogout?.()
     },
     async dispose(): Promise<void> {},
     async relogin(): Promise<boolean> {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   AlarmClock,
   ArrowRight,
@@ -14,10 +14,15 @@ import {
   Puzzle,
   Store,
 } from "lucide-react"
-import type { ProviderRuntimeSnapshot, SessionSnapshot } from "@orahako/academic-sdk"
+import type { SessionSnapshot } from "@orahako/academic-sdk"
 import type { DerivedComponentProps, ObservableSource, SlotComponent } from "@orahako/sdk"
 import { Badge, Button, cn, Spinner, Switch } from "@orahako/ui-primitives"
+import "./slots"
 import type { OnboardingDictionary, OnboardingStoreInstance } from "./store"
+
+export const onboardingWizardChildren = {
+  "onboarding.school.footer": { kind: "list" },
+} as const
 
 export const ONBOARDING_COMPLETING_EVENT = "orahako:onboarding-completing"
 const EXIT_DURATION_MS = 420
@@ -407,7 +412,6 @@ export interface OnboardingWizardInject {
   readonly hooks: {
     readonly storeHydrated: ObservableSource<boolean>
     readonly session: ObservableSource<SessionSnapshot>
-    readonly provider: ObservableSource<ProviderRuntimeSnapshot>
     readonly schools: ObservableSource<readonly OnboardingSchoolChoice[]>
     readonly schoolsLoading: ObservableSource<boolean>
     readonly schoolsError: ObservableSource<string | null>
@@ -422,8 +426,6 @@ export interface OnboardingWizardInject {
   readonly setMarketEnabled?: (enabled: boolean) => void
   readonly isNative: () => boolean
   readonly hasProvider: (schoolId: string) => boolean
-  readonly hasDemoProvider?: () => boolean
-  readonly enterDemoMode?: () => Promise<void>
   readonly activateSchoolChoice: (school: OnboardingSchoolChoice) => Promise<void>
   readonly checkNotificationPermission?: () => Promise<boolean>
   readonly checkExactAlarmPermission?: () => Promise<boolean>
@@ -436,16 +438,15 @@ export interface OnboardingWizardInject {
 export type OnboardingWizardProps = DerivedComponentProps<
   Record<string, never>,
   OnboardingDictionary,
-  undefined,
+  typeof onboardingWizardChildren,
   OnboardingStoreInstance,
   OnboardingWizardInject
 >
 
 export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) => {
-  const { t, locale, useStore, actions } = props
+  const { t, locale, useStore, actions, renderSlot } = props
   const storeHydrated = props.useStoreHydrated()
   const session = props.useSession()
-  const providerState = props.useProvider()
   const schools = props.useSchools()
   const schoolsLoading = props.useSchoolsLoading()
   const schoolsError = props.useSchoolsError()
@@ -463,48 +464,88 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
     () => storedSchoolId ?? schools[0]?.id ?? ""
   )
   const [installing, setInstalling] = useState(false)
-  const [enteringDemo, setEnteringDemo] = useState(false)
-  const [demoError, setDemoError] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
   const [error, setError] = useState(false)
-  const [exiting, setExiting] = useState(false)
+  const [exitMode, setExitMode] = useState<"complete" | "dismiss" | "preview" | null>(null)
   const [permissionBusy, setPermissionBusy] = useState("")
   const [permissionResults, setPermissionResults] = useState<Record<string, boolean>>({})
-  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (exitTimerRef.current !== null) {
-        clearTimeout(exitTimerRef.current)
-        exitTimerRef.current = null
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!preview) return
-    if (exitTimerRef.current !== null) {
-      clearTimeout(exitTimerRef.current)
-      exitTimerRef.current = null
-    }
-    setStep("welcome")
-    setExiting(false)
-    setError(false)
-    setDemoError(false)
-    setInstalling(false)
-    setEnteringDemo(false)
-  }, [preview])
+  const exiting = exitMode !== null
 
   const {
     checkNotificationPermission,
     checkExactAlarmPermission,
     checkBatteryOptimization,
     isNative,
+    exitPreview,
   } = props
+
+  useEffect(() => {
+    if (exitMode === null) return
+    const timer = setTimeout(() => {
+      setExitMode(null)
+      if (exitMode === "preview") {
+        exitPreview?.()
+      } else if (exitMode === "dismiss") {
+        setDismissed(true)
+      } else {
+        actions.complete()
+      }
+    }, EXIT_DURATION_MS)
+    return () => clearTimeout(timer)
+  }, [actions, exitMode, exitPreview])
+
+  useEffect(() => {
+    if (!preview) return
+    setStep("welcome")
+    setDismissed(false)
+    setExitMode(null)
+    setError(false)
+    setInstalling(false)
+  }, [preview])
+
+  const finish = useCallback(() => {
+    if (exiting) return
+    if (!preview) {
+      dispatchOnboardingCompleting()
+    }
+    if (prefersReducedMotion()) {
+      if (preview) {
+        exitPreview?.()
+      } else {
+        actions.complete()
+      }
+      return
+    }
+    setExitMode(preview ? "preview" : "complete")
+  }, [actions, exitPreview, exiting, preview])
+
+  const dismissWithHandoff = useCallback(
+    async (action: () => Promise<void> | void) => {
+      if (exiting) return
+      if (preview) {
+        finish()
+        return
+      }
+      if (prefersReducedMotion()) {
+        await action()
+        dispatchOnboardingCompleting()
+        setDismissed(true)
+        return
+      }
+      setExitMode("dismiss")
+      try {
+        await action()
+        dispatchOnboardingCompleting()
+      } catch (err) {
+        setExitMode(null)
+        throw err
+      }
+    },
+    [exiting, finish, preview]
+  )
   const hydrated = storeHydrated && session.hasHydrated
-  const inDemoMode =
-    providerState.schoolId === "demo" ||
-    (session.isAuthenticated && session.activeSchoolId === "demo")
-  const visible = preview || exiting || (hydrated && !completed && !inDemoMode)
+  const visible =
+    preview || exiting || (hydrated && !completed && !dismissed && !session.isAuthenticated)
   const schoolLocked = !preview && storedSchoolId !== null
   const showMarketStep = props.hasMarket?.() ?? false
   const activeStep: "welcome" | "agreement" | "market" | "school" | "permissions" = schoolLocked
@@ -684,60 +725,6 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
         ]
       : []),
   ]
-
-  async function handleEnterDemo() {
-    if (exiting || enteringDemo) return
-    if (preview) {
-      finish()
-      return
-    }
-    if (!props.enterDemoMode) return
-    setEnteringDemo(true)
-    setDemoError(false)
-    try {
-      if (prefersReducedMotion()) {
-        await props.enterDemoMode()
-        dispatchOnboardingCompleting()
-        return
-      }
-      setExiting(true)
-      await props.enterDemoMode()
-      dispatchOnboardingCompleting()
-      exitTimerRef.current = setTimeout(() => {
-        exitTimerRef.current = null
-        setExiting(false)
-      }, EXIT_DURATION_MS)
-    } catch {
-      setExiting(false)
-      setDemoError(true)
-    } finally {
-      setEnteringDemo(false)
-    }
-  }
-
-  function finish() {
-    if (exiting) return
-    const completeAction = () => {
-      if (preview) {
-        props.exitPreview?.()
-      } else {
-        actions.complete()
-      }
-    }
-    if (!preview) {
-      dispatchOnboardingCompleting()
-    }
-    if (prefersReducedMotion()) {
-      completeAction()
-      return
-    }
-    setExiting(true)
-    exitTimerRef.current = setTimeout(() => {
-      exitTimerRef.current = null
-      completeAction()
-      setExiting(false)
-    }, EXIT_DURATION_MS)
-  }
 
   return (
     <div
@@ -1127,7 +1114,7 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
 
                 <Button
                   className="mt-2.5 h-11 w-full rounded-xl bg-foreground text-background transition-all hover:bg-foreground/90 active:scale-[0.985]"
-                  disabled={installing || enteringDemo || !activeSchoolId}
+                  disabled={installing || exiting || !activeSchoolId}
                   onClick={() => void selectSchoolAndContinue()}
                 >
                   {installing ? <Spinner data-icon="inline-start" /> : null}
@@ -1137,27 +1124,10 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
                   {installing ? t("installing") : t("confirm")}
                 </Button>
 
-                {props.hasDemoProvider?.() && (
-                  <div className="mt-3 flex flex-col items-center gap-1.5">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      data-onboarding-try-demo=""
-                      disabled={installing || enteringDemo}
-                      onClick={() => void handleEnterDemo()}
-                      className="h-9 w-full rounded-xl text-muted-foreground hover:text-foreground"
-                    >
-                      {enteringDemo && <Spinner data-icon="inline-start" />}
-                      {t("tryDemo")}
-                    </Button>
-                    {demoError && (
-                      <p role="alert" className="text-xs text-destructive">
-                        {t("tryDemoFailed")}
-                      </p>
-                    )}
-                  </div>
-                )}
+                {renderSlot("onboarding.school.footer", {
+                  disabled: installing || exiting,
+                  dismissWithHandoff,
+                })}
               </section>
             ) : (
               <section key="permissions" data-onboarding-step="permissions">

@@ -20,6 +20,7 @@ import {
 import {
   ONBOARDING_COMPLETING_EVENT,
   OnboardingWizard,
+  onboardingWizardChildren,
   type OnboardingSchoolChoice,
 } from "./wizard"
 
@@ -149,14 +150,11 @@ export const onboardingPlugin = definePlugin({
     const configuredSchools: readonly OnboardingSchoolChoice[] =
       config.schools && config.schools.length > 0
         ? config.schools
-        : providers
-            .listProviders()
-            .filter((id) => id !== "demo")
-            .map((id) => ({
-              id,
-              name: id,
-              builtin: true,
-            }))
+        : providers.listProviders().map((id) => ({
+            id,
+            name: id,
+            builtin: true,
+          }))
 
     const schools = createObservableSource<readonly OnboardingSchoolChoice[]>(configuredSchools)
     const schoolsLoading = createObservableSource(false)
@@ -205,16 +203,6 @@ export const onboardingPlugin = definePlugin({
       void provider.initialize().catch(() => {})
     }
 
-    const enterDemoMode = async (): Promise<void> => {
-      if (!providers.hasProvider("demo")) {
-        throw new Error("Demo provider is not available")
-      }
-      session.clearCredential("demo")
-      session.setSessionExpired(false)
-      provider.selectSchool("demo")
-      await provider.initialize()
-    }
-
     const checkNativePermission = async (
       method: "checkPermissions" | "checkExactAlarmPermission" | "checkBatteryOptimization",
       field: "granted" | "ignored"
@@ -239,12 +227,12 @@ export const onboardingPlugin = definePlugin({
           slot: "shell.overlay",
           order: -100,
           dictionary: onboardingDictionary,
+          children: onboardingWizardChildren,
           store,
           inject: () => ({
             hooks: {
               storeHydrated: store.hydrated,
               session: session.state,
-              provider: provider.state,
               schools,
               schoolsLoading,
               schoolsError,
@@ -271,8 +259,6 @@ export const onboardingPlugin = definePlugin({
             },
             isNative: () => native.isNative,
             hasProvider: (schoolId: string) => providers.hasProvider(schoolId),
-            hasDemoProvider: () => providers.hasProvider("demo"),
-            enterDemoMode,
             activateSchoolChoice,
             checkNotificationPermission: () => checkNativePermission("checkPermissions", "granted"),
             checkExactAlarmPermission: () =>

@@ -27,7 +27,7 @@ import {
   StudentProfileHeader,
 } from "./components"
 import { authUiDictionary } from "./dictionary"
-import { LoginPage, type LoginPageInject } from "./login-page"
+import { LoginPage, loginPageChildren, type LoginPageInject } from "./login-page"
 import "./slots"
 import {
   createLoginRateLimiter,
@@ -355,25 +355,6 @@ export const authUiPlugin = definePlugin({
       router.replace({ route: "login" })
     }
 
-    const reloadApp = (): void => {
-      if (typeof window !== "undefined" && typeof window.location?.reload === "function") {
-        setTimeout(() => {
-          window.location.reload()
-        }, 50)
-      }
-    }
-
-    const exitDemoSchool = (): void => {
-      session.clearCredential("demo")
-      applyRememberedCredential("demo", null)
-      session.setSessionExpired(false)
-      const target = providers.listProviders().find((id) => id !== "demo") ?? null
-      if (target) {
-        provider.selectSchool(target)
-      }
-      reloadApp()
-    }
-
     const performLogout = async (): Promise<void> => {
       const schoolId = provider.getSnapshot().schoolId ?? session.getSnapshot().activeSchoolId
       try {
@@ -384,10 +365,6 @@ export const authUiPlugin = definePlugin({
           applyRememberedCredential(schoolId, null)
         }
         session.setSessionExpired(false)
-      }
-      if (schoolId === "demo") {
-        exitDemoSchool()
-        return
       }
       toast.success(t("session.logoutSuccess"))
       router.replace({ route: "login" })
@@ -447,6 +424,7 @@ export const authUiPlugin = definePlugin({
         fullscreen: true,
         root: true,
         dictionary: authUiDictionary,
+        children: loginPageChildren,
         store: rememberStore,
         inject: (): LoginPageInject => ({
           hooks: {
@@ -471,7 +449,6 @@ export const authUiPlugin = definePlugin({
           },
           checkRateLimit: () => rateLimiter.checkRateLimit(),
           recordLoginAttempt: () => rateLimiter.recordLoginAttempt(),
-          exitDemoSchool,
         }),
       },
       LoginPage

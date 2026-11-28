@@ -17,6 +17,7 @@ import type {
   Translator,
 } from "@orahako/sdk"
 import { blurActiveElement, Button, Checkbox, cn, Input, Spinner } from "@orahako/ui-primitives"
+import "./slots"
 import type { AuthUiDictionary } from "./dictionary"
 import {
   formatRateLimitMessage,
@@ -262,6 +263,10 @@ const LOGIN_ANIMATION_STYLE = `
 }
 `.trim()
 
+export const loginPageChildren = {
+  "auth.login.footer": { kind: "list" },
+} as const
+
 export interface LoginPageInject {
   readonly hooks: {
     readonly session: ObservableSource<SessionSnapshot>
@@ -283,13 +288,12 @@ export interface LoginPageInject {
   readonly redirectAfterLogin: () => void
   readonly checkRateLimit: () => RateLimitResult
   readonly recordLoginAttempt: () => void
-  readonly exitDemoSchool?: () => void
 }
 
 export type LoginPageProps = DerivedComponentProps<
   Record<string, never>,
   AuthUiDictionary,
-  undefined,
+  typeof loginPageChildren,
   RememberedCredentialsStoreInstance,
   LoginPageInject
 >
@@ -562,7 +566,7 @@ function AmbientGeometry({ handoffKey }: { readonly handoffKey: number }) {
 }
 
 export const LoginPage: SlotComponent<LoginPageProps> = (props) => {
-  const { t, useStore } = props
+  const { t, useStore, renderSlot } = props
   const session = props.useSession()
   const providerSnap = props.useProvider()
   const rememberHydrated = props.useRememberHydrated()
@@ -661,12 +665,6 @@ export const LoginPage: SlotComponent<LoginPageProps> = (props) => {
       setRemember(true)
     }
   }, [props.canRemember, rememberHydrated, rememberedForSchool, activeSchoolId])
-
-  useEffect(() => {
-    if (activeSchoolId !== "demo") return
-    setUsername((current) => (current.length > 0 ? current : "20260101"))
-    setPassword((current) => (current.length > 0 ? current : "demo"))
-  }, [activeSchoolId])
 
   useEffect(() => {
     if (countdown <= 0) return
@@ -1285,34 +1283,10 @@ export const LoginPage: SlotComponent<LoginPageProps> = (props) => {
                       </Button>
                     </div>
 
-                    {activeSchoolId === "demo" && (
-                      <div
-                        data-login-demo-notice=""
-                        className="flex flex-col items-center gap-2 pt-1 text-center"
-                      >
-                        <p className="text-xs leading-relaxed text-muted-foreground">
-                          {t("login.demoHint")}
-                        </p>
-                        {props.exitDemoSchool && (
-                          <button
-                            type="button"
-                            data-login-exit-demo=""
-                            disabled={loading}
-                            onClick={() => {
-                              props.exitDemoSchool?.()
-                              setUsername("")
-                              setPassword("")
-                              setCaptcha("")
-                              setNeedsCaptcha(false)
-                              setCaptchaUrl(null)
-                            }}
-                            className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-                          >
-                            {t("login.exitDemoMode")}
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    {renderSlot("auth.login.footer", {
+                      schoolId: activeSchoolId ?? null,
+                      disabled: loading,
+                    })}
                   </form>
                 </section>
               ) : (
