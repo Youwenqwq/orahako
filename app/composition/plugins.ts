@@ -1,6 +1,7 @@
 import { academicRuntimePlugins } from "@orahako/academic-runtime"
 import comprehensivePlugin from "@orahako/plugin-comprehensive"
 import creditsPlugin from "@orahako/plugin-credits"
+import demoProviderPlugin from "@orahako/plugin-demo-provider"
 import ecardPlugin from "@orahako/plugin-ecard"
 import epayPlugin from "@orahako/plugin-epay"
 import evaluationPlugin from "@orahako/plugin-evaluation"
@@ -76,6 +77,7 @@ export const officialPlugins = [
   ...platformPlugins,
   ...academicRuntimePlugins,
   authUiPlugin,
+  demoProviderPlugin,
   onboardingPlugin,
   notificationsPlugin,
   overviewPlugin,

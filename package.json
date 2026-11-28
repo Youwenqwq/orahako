@@ -41,6 +41,7 @@
     "@orahako/kernel": "workspace:*",
     "@orahako/plugin-comprehensive": "workspace:*",
     "@orahako/plugin-credits": "workspace:*",
+    "@orahako/plugin-demo-provider": "workspace:*",
     "@orahako/plugin-ecard": "workspace:*",
     "@orahako/plugin-epay": "workspace:*",
     "@orahako/plugin-evaluation": "workspace:*",

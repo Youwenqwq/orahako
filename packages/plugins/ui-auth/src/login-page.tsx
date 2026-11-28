@@ -283,6 +283,9 @@ export interface LoginPageInject {
   readonly redirectAfterLogin: () => void
   readonly checkRateLimit: () => RateLimitResult
   readonly recordLoginAttempt: () => void
+  readonly hasDemoProvider?: () => boolean
+  readonly switchToDemo?: () => void
+  readonly exitDemoSchool?: () => void
 }
 
 export type LoginPageProps = DerivedComponentProps<
@@ -1277,6 +1280,57 @@ export const LoginPage: SlotComponent<LoginPageProps> = (props) => {
                         )}
                       </Button>
                     </div>
+
+                    {activeSchoolId === "demo" ? (
+                      <div
+                        data-login-demo-notice=""
+                        className="flex flex-col items-center gap-2 pt-1 text-center"
+                      >
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          {t("login.demoHint")}
+                        </p>
+                        {props.exitDemoSchool && (
+                          <button
+                            type="button"
+                            data-login-exit-demo=""
+                            disabled={loading}
+                            onClick={() => {
+                              props.exitDemoSchool?.()
+                              setUsername("")
+                              setPassword("")
+                              setCaptcha("")
+                              setNeedsCaptcha(false)
+                              setCaptchaUrl(null)
+                            }}
+                            className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+                          >
+                            {t("login.exitDemoMode")}
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      props.hasDemoProvider?.() &&
+                      props.switchToDemo && (
+                        <div className="pt-1 text-center">
+                          <button
+                            type="button"
+                            data-login-try-demo=""
+                            disabled={loading}
+                            onClick={() => {
+                              props.switchToDemo?.()
+                              setUsername("20260101")
+                              setPassword("demo")
+                              setCaptcha("")
+                              setNeedsCaptcha(false)
+                              setCaptchaUrl(null)
+                            }}
+                            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            {t("login.tryDemo")}
+                          </button>
+                        </div>
+                      )
+                    )}
                   </form>
                 </section>
               ) : (

@@ -106,7 +106,7 @@ describe("official composition", () => {
     try {
       await host.bootstrap()
       expect([...host.loadErrors]).toEqual([])
-      expect(host.runtime.context.get("providers")?.listProviders()).toEqual(["ysu"])
+      expect(host.runtime.context.get("providers")?.listProviders()).toEqual(["demo", "ysu"])
       expect(host.runtime.get("ysu.provider")?.status).toBe("active")
       expect(host.runtime.get("orahako.meter")?.status).toBe("active")
       expect(host.runtime.get("orahako.runtime.appearance")?.status).toBe("active")

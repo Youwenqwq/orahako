@@ -45,6 +45,7 @@
       "@orahako/plugin-onboarding": ["./packages/plugins/onboarding/src/index.ts"],
       "@orahako/plugin-overview": ["./packages/plugins/overview/src/index.ts"],
       "@orahako/plugin-ui-auth": ["./packages/plugins/ui-auth/src/index.ts"],
+      "@orahako/plugin-demo-provider": ["./packages/plugins/demo-provider/src/index.ts"],
       "@orahako/plugin-ysu-provider": ["./packages/plugins/ysu-provider/src/index.ts"],
       "@orahako/plugin-comprehensive": ["./packages/plugins/comprehensive/src/index.ts"],
       "@orahako/plugin-credits": ["./packages/plugins/credits/src/index.ts"],

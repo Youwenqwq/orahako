@@ -355,12 +355,42 @@ export const authUiPlugin = definePlugin({
       router.replace({ route: "login" })
     }
 
+    let nonDemoSchoolId: string | null = null
+    const rememberRealSchool = (): void => {
+      const current = provider.getSnapshot().schoolId ?? session.getSnapshot().activeSchoolId
+      if (current && current !== "demo") {
+        nonDemoSchoolId = current
+      }
+    }
+    rememberRealSchool()
+
+    const switchToDemo = (): void => {
+      if (!providers.hasProvider("demo")) return
+      rememberRealSchool()
+      provider.selectSchool("demo")
+      void provider.initialize().catch(() => {})
+    }
+
+    const exitDemoSchool = (): void => {
+      const target =
+        (nonDemoSchoolId && providers.hasProvider(nonDemoSchoolId) ? nonDemoSchoolId : null) ??
+        providers.listProviders().find((id) => id !== "demo") ??
+        null
+      if (target) {
+        provider.selectSchool(target)
+        void provider.initialize().catch(() => {})
+      }
+    }
+
     const performLogout = async (): Promise<void> => {
       const schoolId = provider.getSnapshot().schoolId ?? session.getSnapshot().activeSchoolId
       try {
         await provider.logout()
       } finally {
         if (schoolId) applyRememberedCredential(schoolId, null)
+      }
+      if (schoolId === "demo") {
+        exitDemoSchool()
       }
       toast.success(t("session.logoutSuccess"))
       router.replace({ route: "login" })
@@ -444,6 +474,9 @@ export const authUiPlugin = definePlugin({
           },
           checkRateLimit: () => rateLimiter.checkRateLimit(),
           recordLoginAttempt: () => rateLimiter.recordLoginAttempt(),
+          hasDemoProvider: () => providers.hasProvider("demo"),
+          switchToDemo,
+          exitDemoSchool,
         }),
       },
       LoginPage

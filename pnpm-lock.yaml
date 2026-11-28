@@ -232,6 +232,9 @@ importers:
       '@orahako/plugin-credits':
         specifier: workspace:*
         version: link:packages/plugins/credits
+      '@orahako/plugin-demo-provider':
+        specifier: workspace:*
+        version: link:packages/plugins/demo-provider
       '@orahako/plugin-ecard':
         specifier: workspace:*
         version: link:packages/plugins/ecard
@@ -1423,6 +1426,64 @@ importers:
       '@orahako/runtime-ui':
         specifier: workspace:*
         version: link:../../runtime/ui
+      '@types/node':
+        specifier: ^25.9.1
+        version: 25.9.1
+      '@types/react':
+        specifier: ^19.2.15
+        version: 19.2.15
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.4(@types/react@19.2.15)
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@types/node@25.9.1)(msw@2.14.6(@types/node@25.9.1)(typescript@6.0.3))(vite@8.2.1(@types/node@25.9.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/plugins/demo-provider:
+    dependencies:
+      '@orahako/academic-sdk':
+        specifier: workspace:*
+        version: link:../../edu/sdk
+      '@orahako/sdk':
+        specifier: workspace:*
+        version: link:../../core/sdk
+      '@orahako/ui-primitives':
+        specifier: workspace:*
+        version: link:../../core/ui-primitives
+      lucide-react:
+        specifier: ^1.17.0
+        version: 1.17.0(react@19.2.6)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.6
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.6(react@19.2.6)
+    devDependencies:
+      '@cordisjs/core':
+        specifier: 3.18.1
+        version: 3.18.1
+      '@orahako/academic-runtime':
+        specifier: workspace:*
+        version: link:../../edu/runtime
+      '@orahako/kernel':
+        specifier: workspace:*
+        version: link:../../core/kernel
+      '@orahako/runtime-i18n':
+        specifier: workspace:*
+        version: link:../../runtime/i18n
+      '@orahako/runtime-router':
+        specifier: workspace:*
+        version: link:../../runtime/router
+      '@orahako/runtime-slots':
+        specifier: workspace:*
+        version: link:../../runtime/slots
+      '@orahako/runtime-storage':
+        specifier: workspace:*
+        version: link:../../runtime/storage
       '@types/node':
         specifier: ^25.9.1
         version: 25.9.1

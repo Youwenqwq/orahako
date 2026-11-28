@@ -56,6 +56,9 @@ export const authUiDictionary = defineDictionary({
       errorRateLimitWindow: "15分钟内登录次数已达上限，请 {minutes}:{seconds} 后再试",
       retryAfter: "{seconds} 秒后可重试",
       skipRateLimit: "仍然登录",
+      tryDemo: "想先试试看？进入演示模式",
+      demoHint: "演示模式：任意学号密码可登录，密码输 mfa 可体验二次验证",
+      exitDemoMode: "返回学校登录",
     },
     session: {
       expired: "登录已过期，请重新登录",
@@ -136,6 +139,9 @@ export const authUiDictionary = defineDictionary({
         "Login limit reached (3 per 15 min). Please try again in {minutes}:{seconds}",
       retryAfter: "Retry in {seconds}s",
       skipRateLimit: "Login anyway",
+      tryDemo: "Just exploring? Try Demo Mode",
+      demoHint: "Demo mode: sign in with any credentials, or use password \"mfa\" to test 2FA",
+      exitDemoMode: "Back to school login",
     },
     session: {
       expired: "Login expired, please sign in again",

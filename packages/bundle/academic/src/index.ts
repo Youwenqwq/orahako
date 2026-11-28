@@ -18,6 +18,7 @@ export const academicBundle = defineBundle({
     { id: "orahako.runtime.notifications", protected: true },
     { id: "orahako.runtime.provider-support", protected: true },
     { id: "orahako.auth-ui", protected: true },
+    { id: "orahako.demo.provider" },
     { id: "orahako.onboarding" },
     { id: "orahako.notifications", protected: true },
     { id: "orahako.overview" },

@@ -1,3 +1,4 @@
+import { getSlice } from "@orahako/academic-sdk"
 import type { PluginAnalyticsService } from "@orahako/ui-analytics"
 import {
   createObservableSource,
@@ -148,11 +149,14 @@ export const onboardingPlugin = definePlugin({
     const configuredSchools: readonly OnboardingSchoolChoice[] =
       config.schools && config.schools.length > 0
         ? config.schools
-        : providers.listProviders().map((id) => ({
-            id,
-            name: id,
-            builtin: true,
-          }))
+        : providers
+            .listProviders()
+            .filter((id) => id !== "demo")
+            .map((id) => ({
+              id,
+              name: id,
+              builtin: true,
+            }))
 
     const schools = createObservableSource<readonly OnboardingSchoolChoice[]>(configuredSchools)
     const schoolsLoading = createObservableSource(false)
@@ -198,6 +202,23 @@ export const onboardingPlugin = definePlugin({
 
       provider.selectSchool(school.id)
       void provider.initialize().catch(() => {})
+    }
+
+    const enterDemoMode = async (): Promise<void> => {
+      if (!providers.hasProvider("demo")) {
+        throw new Error("Demo provider is not available")
+      }
+      const demoProvider = provider.selectSchool("demo")
+      await provider.initialize()
+      const auth = getSlice(demoProvider, "auth")
+      if (auth) {
+        await auth.login({ username: "20260101", password: "demo" })
+      }
+      session.setCredential({
+        username: "20260101",
+        credential: "demo-session-token",
+        schoolId: "demo",
+      })
     }
 
     const checkNativePermission = async (
@@ -251,6 +272,8 @@ export const onboardingPlugin = definePlugin({
             },
             isNative: () => native.isNative,
             hasProvider: (schoolId: string) => providers.hasProvider(schoolId),
+            hasDemoProvider: () => providers.hasProvider("demo"),
+            enterDemoMode,
             activateSchoolChoice,
             checkNotificationPermission: () => checkNativePermission("checkPermissions", "granted"),
             checkExactAlarmPermission: () =>

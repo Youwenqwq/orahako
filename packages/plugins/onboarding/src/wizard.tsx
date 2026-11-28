@@ -419,6 +419,8 @@ export interface OnboardingWizardInject {
   readonly setMarketEnabled?: (enabled: boolean) => void
   readonly isNative: () => boolean
   readonly hasProvider: (schoolId: string) => boolean
+  readonly hasDemoProvider?: () => boolean
+  readonly enterDemoMode?: () => Promise<void>
   readonly activateSchoolChoice: (school: OnboardingSchoolChoice) => Promise<void>
   readonly checkNotificationPermission?: () => Promise<boolean>
   readonly checkExactAlarmPermission?: () => Promise<boolean>
@@ -456,6 +458,8 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
     () => storedSchoolId ?? schools[0]?.id ?? ""
   )
   const [installing, setInstalling] = useState(false)
+  const [enteringDemo, setEnteringDemo] = useState(false)
+  const [demoError, setDemoError] = useState(false)
   const [error, setError] = useState(false)
   const [exiting, setExiting] = useState(false)
   const [permissionBusy, setPermissionBusy] = useState("")
@@ -478,7 +482,8 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
     isNative,
   } = props
   const hydrated = storeHydrated && session.hasHydrated
-  const visible = hydrated && !completed
+  const inDemoSession = session.isAuthenticated && session.activeSchoolId === "demo"
+  const visible = hydrated && !completed && !inDemoSession
   const schoolLocked = storedSchoolId !== null
   const showMarketStep = props.hasMarket?.() ?? false
   const activeStep: "welcome" | "agreement" | "market" | "school" | "permissions" = schoolLocked
@@ -653,6 +658,19 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
       : []),
   ]
 
+  async function handleEnterDemo() {
+    if (!props.enterDemoMode || enteringDemo) return
+    setEnteringDemo(true)
+    setDemoError(false)
+    try {
+      await props.enterDemoMode()
+    } catch {
+      setDemoError(true)
+    } finally {
+      setEnteringDemo(false)
+    }
+  }
+
   function finish() {
     if (exiting) return
     dispatchOnboardingCompleting()
@@ -716,10 +734,15 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
               {t("welcomeTitle")}
             </h1>
 
-            <div data-ob-stagger="" style={{ animationDelay: "320ms" }} className="mt-10 w-full">
+            <div
+              data-ob-stagger=""
+              style={{ animationDelay: "320ms" }}
+              className="mt-10 flex w-full flex-col gap-3"
+            >
               <Button
                 type="button"
                 size="lg"
+                disabled={enteringDemo}
                 onClick={() => setStep("agreement")}
                 className="group h-12 w-full rounded-xl bg-foreground text-background transition-all duration-200 hover:bg-foreground/90 active:scale-[0.985]"
               >
@@ -729,6 +752,25 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
                   className="size-4 transition-transform duration-200 group-hover:translate-x-1"
                 />
               </Button>
+              {props.hasDemoProvider?.() && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  data-onboarding-try-demo=""
+                  disabled={enteringDemo}
+                  onClick={() => void handleEnterDemo()}
+                  className="h-10 w-full rounded-xl text-muted-foreground hover:text-foreground"
+                >
+                  {enteringDemo && <Spinner data-icon="inline-start" />}
+                  {t("tryDemo")}
+                </Button>
+              )}
+              {demoError && (
+                <p role="alert" className="text-xs text-destructive">
+                  {t("tryDemoFailed")}
+                </p>
+              )}
             </div>
           </section>
         ) : (
