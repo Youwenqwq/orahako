@@ -60,6 +60,10 @@ export const pluginsDictionary = defineDictionary({
     applyTheme: "应用主题",
     activeThemeBadge: "当前主题",
     chooseTheme: "选择主题",
+    desktopOnly: "仅桌面端",
+    mobileOnly: "仅移动端",
+    formFactorConfirmDesktop: "“{name}”主要面向桌面端设计，当前移动端屏幕可能体验不佳，是否继续？",
+    formFactorConfirmMobile: "“{name}”主要面向移动端设计，当前桌面端屏幕可能体验不佳，是否继续？",
     staleMarket: "网络不可用，正在显示上次缓存的市场索引。",
     safeMode: "检测到重复启动失败，外部插件已暂时跳过。你可以在此处逐个重新启用。",
     installedSuccess: "已安装 {name}",
@@ -136,6 +140,12 @@ export const pluginsDictionary = defineDictionary({
     applyTheme: "Apply theme",
     activeThemeBadge: "Active theme",
     chooseTheme: "Choose theme",
+    desktopOnly: "Desktop only",
+    mobileOnly: "Mobile only",
+    formFactorConfirmDesktop:
+      "{name} is designed for desktop screens and may not work well on mobile. Continue anyway?",
+    formFactorConfirmMobile:
+      "{name} is designed for mobile screens and may not work well on desktop. Continue anyway?",
     staleMarket: "The network is unavailable. Showing the last cached market index.",
     safeMode:
       "Repeated startup failures detected. External plugins were skipped; you can enable them individually here.",

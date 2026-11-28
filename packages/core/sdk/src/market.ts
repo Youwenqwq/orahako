@@ -1,5 +1,5 @@
 import semver from "semver"
-import { PLUGIN_API_VERSION } from "./manifest"
+import { PLUGIN_API_VERSION, type PluginFormFactor } from "./manifest"
 
 export type PluginPlatform = "web" | "android"
 export type MarketplacePluginTrust = "official" | "community"
@@ -9,6 +9,7 @@ export interface MarketplaceRelease {
   apiVersion: number
   minAppVersion?: string
   platforms: PluginPlatform[]
+  formFactors?: PluginFormFactor[]
   nativeCapabilities?: string[]
   inject?: string[]
   provides?: string[]
@@ -190,6 +191,10 @@ function isPlatform(value: unknown): value is PluginPlatform {
   return value === "web" || value === "android"
 }
 
+function isFormFactor(value: unknown): value is PluginFormFactor {
+  return value === "desktop" || value === "mobile"
+}
+
 function isTrustLevel(value: unknown): value is MarketplacePluginTrust {
   return value === "official" || value === "community"
 }
@@ -238,6 +243,11 @@ export function validateMarketplaceIndex(input: unknown): MarketplaceIndex {
         rawRelease.apiVersion <= 0 ||
         !Array.isArray(rawRelease.platforms) ||
         !rawRelease.platforms.every(isPlatform) ||
+        (rawRelease.formFactors !== undefined &&
+          (!Array.isArray(rawRelease.formFactors) ||
+            rawRelease.formFactors.length === 0 ||
+            !rawRelease.formFactors.every(isFormFactor) ||
+            new Set(rawRelease.formFactors).size !== rawRelease.formFactors.length)) ||
         (rawRelease.nativeCapabilities !== undefined &&
           !isNonEmptyStringArray(rawRelease.nativeCapabilities)) ||
         (rawRelease.inject !== undefined && !isNonEmptyStringArray(rawRelease.inject)) ||
@@ -263,6 +273,7 @@ export function validateMarketplaceIndex(input: unknown): MarketplaceIndex {
           ? { minAppVersion: rawRelease.minAppVersion }
           : {}),
         platforms: [...rawRelease.platforms],
+        ...(rawRelease.formFactors ? { formFactors: [...rawRelease.formFactors] } : {}),
         ...(rawRelease.nativeCapabilities
           ? { nativeCapabilities: [...rawRelease.nativeCapabilities] }
           : {}),

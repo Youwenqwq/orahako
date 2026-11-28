@@ -15,6 +15,7 @@ export const PLATFORM_MODULES = [
 export type PlatformModuleSpecifier = (typeof PLATFORM_MODULES)[number]
 
 export type PluginKind = "runtime" | "provider" | "feature" | "theme" | "shell"
+export type PluginFormFactor = "desktop" | "mobile"
 
 export interface PluginManifest {
   id: string
@@ -31,8 +32,10 @@ export interface PluginManifest {
   homepage?: string
   icon?: string
   styles?: string[]
-  /** Optional UI categories such as academic, provider, or toybox. */
+  /** Optional UI categories such as academic, campus, provider, or toybox. */
   categories?: string[]
+  /** Optional target form factors (defaults to both desktop and mobile when omitted). */
+  formFactors?: PluginFormFactor[]
   /** Exact plugin package dependencies and their required SemVer ranges. */
   requires?: Record<string, string>
   /** Root Cordis services required by this plugin. */
@@ -78,6 +81,15 @@ function isPluginKind(value: unknown): value is PluginKind {
 
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string")
+}
+
+function isFormFactorArray(value: unknown): value is PluginFormFactor[] {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((item): item is PluginFormFactor => item === "desktop" || item === "mobile") &&
+    new Set(value).size === value.length
+  )
 }
 
 function isStringRecord(value: unknown): value is Record<string, string> {
@@ -156,6 +168,9 @@ export function validatePluginManifest(input: unknown): PluginManifest {
   ) {
     issues.push("categories must contain non-empty strings")
   }
+  if (input.formFactors !== undefined && !isFormFactorArray(input.formFactors)) {
+    issues.push("formFactors must be a non-empty list of unique values from desktop, mobile")
+  }
   if (
     input.requires !== undefined &&
     (!isStringRecord(input.requires) ||
@@ -217,6 +232,7 @@ export function validatePluginManifest(input: unknown): PluginManifest {
     ...(icon !== undefined ? { icon } : {}),
     ...(isStringArray(input.styles) ? { styles: [...input.styles] } : {}),
     ...(isStringArray(input.categories) ? { categories: [...input.categories] } : {}),
+    ...(isFormFactorArray(input.formFactors) ? { formFactors: [...input.formFactors] } : {}),
     ...(isStringRecord(input.requires) ? { requires: { ...input.requires } } : {}),
     ...(isStringArray(input.inject) ? { inject: [...input.inject] } : {}),
     ...(isStringArray(input.provides) ? { provides: [...input.provides] } : {}),

@@ -39,6 +39,7 @@ describe("manifest v1 & platform modules", () => {
       styles: ["dist/tailwind.css"],
       icon: "assets/icon.svg",
       categories: ["academic"],
+      formFactors: ["desktop"],
       inject: ["ui", "storage"],
       provides: ["schedule"],
       requires: { "orahako.core": "^1.0.0" },
@@ -50,6 +51,7 @@ describe("manifest v1 & platform modules", () => {
 
     expect(valid.apiVersion).toBe(1)
     expect(valid.id).toBe("orahako.schedule")
+    expect(valid.formFactors).toEqual(["desktop"])
 
     expect(() =>
       validatePluginManifest({

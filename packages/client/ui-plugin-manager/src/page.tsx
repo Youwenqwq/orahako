@@ -14,6 +14,7 @@ import {
   type MarketplaceIndex,
   type MarketplacePlugin,
   type ObservableSource,
+  type PluginFormFactor,
   type PluginHostPreferenceSnapshot,
   type PluginKind,
   type PluginManagerState,
@@ -37,6 +38,7 @@ import {
   Skeleton,
   Spinner,
   Switch,
+  useIsMobile,
 } from "@orahako/ui-primitives"
 import { groupByPluginCategory, pluginCategory, type PluginCategory } from "./categories"
 import type { PluginsDictionary } from "./dictionary"
@@ -135,12 +137,20 @@ interface InstalledRow {
   readonly version: string
   readonly kind: PluginKind
   readonly categories?: readonly string[]
+  readonly formFactors?: readonly PluginFormFactor[]
   readonly required?: boolean
   readonly source: "builtin" | "external"
   readonly protected: boolean
   readonly supported: boolean
   readonly status: string
   readonly error?: string
+}
+
+function exclusiveFormFactor(
+  formFactors?: readonly PluginFormFactor[]
+): PluginFormFactor | undefined {
+  if (!formFactors || formFactors.length !== 1) return undefined
+  return formFactors[0]
 }
 
 export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
@@ -203,6 +213,8 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
   const initialFetchUrlRef = useRef<string | undefined>(undefined)
 
   const platform = getPlatform()
+  const isMobile = useIsMobile()
+  const currentFormFactor: PluginFormFactor = isMobile ? "mobile" : "desktop"
   const appVersion = getAppVersion()
   const nativeCapabilities = getNativeCapabilities()
   const loadErrors = getLoadErrors()
@@ -271,10 +283,28 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
     }
   }
 
+  const askConfirmFormFactor = (
+    name: string,
+    formFactors?: readonly PluginFormFactor[]
+  ): boolean => {
+    const exclusive = exclusiveFormFactor(formFactors)
+    if (!exclusive || exclusive === currentFormFactor) return true
+    const promptText = t(
+      exclusive === "desktop" ? "formFactorConfirmDesktop" : "formFactorConfirmMobile",
+      { name }
+    )
+    if (confirmUninstall) return confirmUninstall(promptText)
+    if (typeof window !== "undefined" && typeof window.confirm === "function") {
+      return window.confirm(promptText)
+    }
+    return true
+  }
+
   async function handleInstallRelease(plugin: MarketplacePlugin): Promise<void> {
     if (!marketUrl) return
     const release = selectCompatibleRelease(plugin, appVersion, platform, nativeCapabilities)
     if (!release) return
+    if (!askConfirmFormFactor(plugin.name, release.formFactors)) return
     await runAction(plugin.id, async () => {
       await installFromUrl(new URL(release.zipUrl, marketUrl).toString(), release.sha256, {
         id: plugin.id,
@@ -321,6 +351,11 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
       const categories =
         state.manifest.categories ??
         market?.index.plugins.find((entry) => entry.id === state.manifest.id)?.categories
+      const marketPlugin = market?.index.plugins.find((entry) => entry.id === state.manifest.id)
+      const marketRelease = marketPlugin
+        ? selectCompatibleRelease(marketPlugin, appVersion, platform, nativeCapabilities)
+        : undefined
+      const formFactors = state.manifest.formFactors ?? marketRelease?.formFactors
       const error = state.error ?? loadErrors.get(state.manifest.id)
       return {
         id: state.manifest.id,
@@ -328,6 +363,7 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
         version: state.manifest.version,
         kind: state.manifest.kind,
         ...(categories !== undefined ? { categories } : {}),
+        ...(formFactors !== undefined ? { formFactors } : {}),
         ...(state.manifest.required !== undefined ? { required: state.manifest.required } : {}),
         source,
         protected: isProtected(state.manifest.id),
@@ -340,6 +376,11 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
       const categories =
         pkg.manifest.categories ??
         market?.index.plugins.find((entry) => entry.id === pkg.manifest.id)?.categories
+      const marketPlugin = market?.index.plugins.find((entry) => entry.id === pkg.manifest.id)
+      const marketRelease = marketPlugin
+        ? selectCompatibleRelease(marketPlugin, appVersion, platform, nativeCapabilities)
+        : undefined
+      const formFactors = pkg.manifest.formFactors ?? marketRelease?.formFactors
       const error = loadErrors.get(pkg.manifest.id)
       return {
         id: pkg.manifest.id,
@@ -347,6 +388,7 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
         version: pkg.manifest.version,
         kind: pkg.manifest.kind,
         ...(categories !== undefined ? { categories } : {}),
+        ...(formFactors !== undefined ? { formFactors } : {}),
         ...(pkg.manifest.required !== undefined ? { required: pkg.manifest.required } : {}),
         source: "external",
         protected: isProtected(pkg.manifest.id),
@@ -414,7 +456,12 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
     ) ?? uiSnapshot.shells[0]
   const activeShellSupportsThemes = activeShellEntry?.supportsThemes === true
 
-  const renderAppearanceAction = (pluginId: string, status: string): ReactNode => {
+  const renderAppearanceAction = (
+    pluginId: string,
+    status: string,
+    pluginName: string,
+    formFactors?: readonly PluginFormFactor[]
+  ): ReactNode => {
     if (status !== "active") return null
 
     const pluginShells = uiSnapshot.shells.filter((shell) => shell.pluginId === pluginId)
@@ -430,7 +477,10 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
           variant={isCurrent ? "secondary" : "outline"}
           disabled={isCurrent || Boolean(busy)}
           data-plugin-apply-shell={qualified}
-          onClick={() => setActiveShell(isDefault ? undefined : qualified)}
+          onClick={() => {
+            if (!isDefault && !askConfirmFormFactor(pluginName, formFactors)) return
+            setActiveShell(isDefault ? undefined : qualified)
+          }}
         >
           {isCurrent && <Check data-icon="inline-start" />}
           {t(isCurrent ? "activeShellBadge" : "useShell")}
@@ -587,7 +637,13 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
               </h3>
               {group.plugins.map((plugin) => {
                 const statusKey = STATUS_KEYS[plugin.status] ?? "disabled"
-                const appearanceAction = renderAppearanceAction(plugin.id, plugin.status)
+                const appearanceAction = renderAppearanceAction(
+                  plugin.id,
+                  plugin.status,
+                  plugin.name,
+                  plugin.formFactors
+                )
+                const exclusive = exclusiveFormFactor(plugin.formFactors)
                 return (
                   <Card key={plugin.id} className="py-0">
                     <CardContent className="flex flex-col gap-3 p-4">
@@ -598,6 +654,11 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
                             {plugin.id} · v{plugin.version}
                           </div>
                         </div>
+                        {exclusive && (
+                          <Badge variant="outline">
+                            {t(exclusive === "desktop" ? "desktopOnly" : "mobileOnly")}
+                          </Badge>
+                        )}
                         <Badge variant="outline">{t(plugin.source)}</Badge>
                         <Badge variant={plugin.status === "failed" ? "destructive" : "secondary"}>
                           {t(statusKey)}
@@ -759,8 +820,14 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
               )
               const appearanceAction =
                 installed && !hasUpdate
-                  ? renderAppearanceAction(plugin.id, installed.status)
+                  ? renderAppearanceAction(
+                      plugin.id,
+                      installed.status,
+                      plugin.name,
+                      release.formFactors ?? installed.formFactors
+                    )
                   : null
+              const exclusive = exclusiveFormFactor(release.formFactors)
               return (
                 <Card key={plugin.id} className="py-0">
                   <CardContent className="flex items-center gap-3 p-4">
@@ -772,6 +839,11 @@ export const PluginsPage: SlotComponent<PluginsPageProps> = (props) => {
                         )}
                         {plugin.trust === "community" && (
                           <Badge variant="outline">{t("community")}</Badge>
+                        )}
+                        {exclusive && (
+                          <Badge variant="outline">
+                            {t(exclusive === "desktop" ? "desktopOnly" : "mobileOnly")}
+                          </Badge>
                         )}
                       </div>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
