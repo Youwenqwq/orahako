@@ -10,6 +10,7 @@ import {
   type PluginPackageRuntime,
 } from "@orahako/sdk"
 import "./slots"
+import { OnboardingDebugPanel } from "./debug-panel"
 import {
   onboardingDictionary,
   onboardingStore,
@@ -161,6 +162,7 @@ export const onboardingPlugin = definePlugin({
     const schools = createObservableSource<readonly OnboardingSchoolChoice[]>(configuredSchools)
     const schoolsLoading = createObservableSource(false)
     const schoolsError = createObservableSource<string | null>(null)
+    const preview = createObservableSource(false)
 
     const discoverSchools = async (): Promise<void> => {
       if (disposed) return
@@ -253,9 +255,13 @@ export const onboardingPlugin = definePlugin({
               schools,
               schoolsLoading,
               schoolsError,
+              preview,
             },
             retrySchoolDiscovery: () => {
               void discoverSchools()
+            },
+            exitPreview: () => {
+              preview.set(false)
             },
             hasAnalytics: () => Boolean(analytics?.endpoint),
             setAnalyticsConsent: (enabled: boolean) => {
@@ -286,6 +292,24 @@ export const onboardingPlugin = definePlugin({
           }),
         },
         OnboardingWizard
+      )
+    )
+
+    slots.inject("debug.panels", () =>
+      slots.register(
+        {
+          id: "onboarding-debug",
+          slot: "debug.panels",
+          order: 30,
+          dictionary: onboardingDictionary,
+          store,
+          inject: () => ({
+            startPreview: () => {
+              preview.set(true)
+            },
+          }),
+        },
+        OnboardingDebugPanel
       )
     )
 

@@ -52,6 +52,16 @@ export const onboardingDictionary = defineDictionary({
     retry: "重试",
     skip: "跳过",
     finish: "进入登录",
+    debugTitle: "初始化向导",
+    debugCompleted: "已完成",
+    debugIncomplete: "未完成",
+    debugSchoolLabel: "已锁定学校",
+    debugSchoolNone: "未选择",
+    debugPreviewDesc:
+      "以只读预览模式从头体验所有引导步骤，不会修改已锁定的学校、登录状态或偏好设置。",
+    debugPreviewAction: "预览初始化向导",
+    previewBadge: "预览模式",
+    exitPreview: "退出预览",
   },
   en: {
     brand: "Orahako",
@@ -109,6 +119,16 @@ export const onboardingDictionary = defineDictionary({
     retry: "Retry",
     skip: "Skip",
     finish: "Continue to sign in",
+    debugTitle: "Onboarding Wizard",
+    debugCompleted: "Completed",
+    debugIncomplete: "Incomplete",
+    debugSchoolLabel: "Locked school",
+    debugSchoolNone: "None",
+    debugPreviewDesc:
+      "Walk through every onboarding step in read-only preview mode without changing your locked school, session, or preferences.",
+    debugPreviewAction: "Preview onboarding wizard",
+    previewBadge: "Preview",
+    exitPreview: "Exit preview",
   },
 })
 

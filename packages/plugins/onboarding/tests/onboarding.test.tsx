@@ -814,4 +814,75 @@ describe("@orahako/plugin-onboarding", () => {
     expect(env.setMarketEnabledSpy).toHaveBeenCalledWith(true)
     expect(env.dom.container.textContent).toContain("选择你的学校")
   })
+
+  it("registers a debug.panels preview card that replays onboarding without mutating persisted state", async () => {
+    const storageKey = formatPluginStorageKey(ONBOARDING_PLUGIN_ID, "onboarding")
+    const env = createOnboardingEnv({
+      persisted: {
+        [storageKey]: JSON.stringify({
+          version: 1,
+          state: { completed: true, selectedSchoolId: "ysu" },
+        }),
+      },
+      analyticsEndpoint: "https://example.com/api/stats",
+      enableMarketPreference: true,
+    })
+    activeUnmount = env.cleanup
+
+    const disposeDebugPanels = env.slots.declare({ name: "debug.panels", kind: "list" })
+    try {
+      await vi.waitFor(() => expect(env.storeInstance.hydrated.getSnapshot()).toBe(true))
+      await vi.waitFor(() =>
+        expect(env.runtime.context.get("session")?.getSnapshot().hasHydrated).toBe(true)
+      )
+
+      const debugEntries = env.slots.select("debug.panels")
+      expect(debugEntries).toHaveLength(1)
+      const debugEntry = debugEntries[0]!
+      const i18n = env.runtime.context.get("i18n") as PluginI18nRegistryService
+
+      await env.dom.render(
+        <>
+          <ContributionOutlet entry={debugEntry} slots={env.slots} i18n={i18n} />
+          <ContributionOutlet entry={env.entry} slots={env.slots} i18n={i18n} />
+        </>
+      )
+
+      expect(env.dom.container.textContent).toContain("初始化向导")
+      expect(env.dom.container.textContent).toContain("已完成")
+      expect(env.dom.container.textContent).toContain("ysu")
+      expect(env.dom.container.textContent).not.toContain("欢迎使用酸橙盒")
+
+      await clickButton(env.dom.container, "预览初始化向导")
+      expect(env.dom.container.textContent).toContain("预览模式")
+      expect(env.dom.container.textContent).toContain("欢迎使用酸橙盒")
+
+      await clickButton(env.dom.container, "开始设置")
+      expect(env.dom.container.textContent).toContain("开始之前")
+      await clickButton(env.dom.container, "同意并继续")
+      expect(env.setAnalyticsConsentSpy).not.toHaveBeenCalled()
+
+      expect(env.dom.container.textContent).toContain("插件市场")
+      await clickButton(env.dom.container, "开启插件市场")
+      expect(env.setMarketEnabledSpy).not.toHaveBeenCalled()
+
+      expect(env.dom.container.textContent).toContain("选择你的学校")
+      await clickButton(env.dom.container, "确认并继续")
+      expect(env.applyPluginBundle).not.toHaveBeenCalled()
+      expect(env.dom.container.textContent).toContain("系统权限")
+
+      await clickButton(env.dom.container, "退出预览")
+      expect(
+        findAll(env.dom.container, (node) => node.attributes.has("data-onboarding-preview-bar"))
+      ).toHaveLength(0)
+      expect(env.dom.container.textContent).not.toContain("退出预览")
+      expect(env.dom.container.textContent).not.toContain("系统权限")
+      expect(env.storeInstance.source.getSnapshot()).toEqual({
+        completed: true,
+        selectedSchoolId: "ysu",
+      })
+    } finally {
+      disposeDebugPanels()
+    }
+  })
 })

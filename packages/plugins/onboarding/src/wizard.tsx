@@ -410,8 +410,10 @@ export interface OnboardingWizardInject {
     readonly schools: ObservableSource<readonly OnboardingSchoolChoice[]>
     readonly schoolsLoading: ObservableSource<boolean>
     readonly schoolsError: ObservableSource<string | null>
+    readonly preview: ObservableSource<boolean>
   }
   readonly retrySchoolDiscovery: () => void
+  readonly exitPreview?: () => void
   readonly hasAnalytics?: () => boolean
   readonly setAnalyticsConsent?: (enabled: boolean) => void
   readonly hasMarket?: () => boolean
@@ -445,6 +447,7 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
   const schools = props.useSchools()
   const schoolsLoading = props.useSchoolsLoading()
   const schoolsError = props.useSchoolsError()
+  const preview = props.usePreview()
   const retrySchoolDiscovery = props.retrySchoolDiscovery
 
   const completed = useStore((state) => state.completed)
@@ -475,6 +478,20 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
     }
   }, [])
 
+  useEffect(() => {
+    if (!preview) return
+    if (exitTimerRef.current !== null) {
+      clearTimeout(exitTimerRef.current)
+      exitTimerRef.current = null
+    }
+    setStep("welcome")
+    setExiting(false)
+    setError(false)
+    setDemoError(false)
+    setInstalling(false)
+    setEnteringDemo(false)
+  }, [preview])
+
   const {
     checkNotificationPermission,
     checkExactAlarmPermission,
@@ -483,8 +500,8 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
   } = props
   const hydrated = storeHydrated && session.hasHydrated
   const inDemoSession = session.isAuthenticated && session.activeSchoolId === "demo"
-  const visible = hydrated && !completed && !inDemoSession
-  const schoolLocked = storedSchoolId !== null
+  const visible = preview || (hydrated && !completed && !inDemoSession)
+  const schoolLocked = !preview && storedSchoolId !== null
   const showMarketStep = props.hasMarket?.() ?? false
   const activeStep: "welcome" | "agreement" | "market" | "school" | "permissions" = schoolLocked
     ? "permissions"
@@ -590,20 +607,26 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
   const progressPercent = (currentStepNumber / totalSteps) * 100
 
   function acceptTermsAndContinue() {
-    if (showAnalyticsOption) {
+    if (!preview && showAnalyticsOption) {
       props.setAnalyticsConsent?.(analyticsEnabled)
     }
     setStep(showMarketStep ? "market" : "school")
   }
 
   function chooseMarketAndContinue(enabled: boolean) {
-    props.setMarketEnabled?.(enabled)
+    if (!preview) {
+      props.setMarketEnabled?.(enabled)
+    }
     setStep("school")
   }
 
   async function selectSchoolAndContinue() {
     const school = schools.find((item) => item.id === activeSchoolId) ?? schools[0]
     if (!school) return
+    if (preview) {
+      setStep("permissions")
+      return
+    }
     setInstalling(true)
     setError(false)
     try {
@@ -659,6 +682,10 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
   ]
 
   async function handleEnterDemo() {
+    if (preview) {
+      props.exitPreview?.()
+      return
+    }
     if (!props.enterDemoMode || enteringDemo) return
     setEnteringDemo(true)
     setDemoError(false)
@@ -673,15 +700,24 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
 
   function finish() {
     if (exiting) return
-    dispatchOnboardingCompleting()
+    const completeAction = () => {
+      if (preview) {
+        props.exitPreview?.()
+      } else {
+        actions.complete()
+      }
+    }
+    if (!preview) {
+      dispatchOnboardingCompleting()
+    }
     if (prefersReducedMotion()) {
-      actions.complete()
+      completeAction()
       return
     }
     setExiting(true)
     exitTimerRef.current = setTimeout(() => {
       exitTimerRef.current = null
-      actions.complete()
+      completeAction()
     }, EXIT_DURATION_MS)
   }
 
@@ -711,6 +747,26 @@ export const OnboardingWizard: SlotComponent<OnboardingWizardProps> = (props) =>
         <div className="absolute inset-y-0 left-6 hidden w-px bg-border/60 sm:block" />
         <div className="absolute inset-y-0 right-6 hidden w-px bg-border/60 sm:block" />
       </div>
+
+      {preview && (
+        <div
+          data-onboarding-preview-bar=""
+          className="fixed top-4 right-4 z-10 flex items-center gap-2 rounded-full border border-border/80 bg-background/90 px-2.5 py-1.5 shadow-sm backdrop-blur"
+        >
+          <Badge variant="secondary" className="text-[11px]">
+            {t("previewBadge")}
+          </Badge>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-xs"
+            onClick={() => props.exitPreview?.()}
+          >
+            {t("exitPreview")}
+          </Button>
+        </div>
+      )}
 
       <main
         data-onboarding-main=""
