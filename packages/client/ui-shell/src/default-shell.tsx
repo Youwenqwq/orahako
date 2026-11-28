@@ -462,16 +462,19 @@ export const DefaultShell: SlotComponent<DefaultShellProps> = (props) => {
     "--sidebar-width": `${sidebarWidth}px`,
   }
 
+  const hideChromeShell = chrome.fullscreen && chrome.activePage?.root === true
+
   const shellBody = (
     <SidebarProvider defaultOpen={defaultSidebarOpen} style={sidebarStyle}>
-      <Sidebar
-        collapsible="icon"
-        className={cn(
-          "[&_[data-sidebar=menu-button]]:py-3",
-          hasBackground &&
-            "[&_[data-slot=sidebar-inner]]:bg-sidebar/70 [&_[data-slot=sidebar-inner]]:backdrop-blur-md"
-        )}
-      >
+      {!hideChromeShell && (
+        <Sidebar
+          collapsible="icon"
+          className={cn(
+            "[&_[data-sidebar=menu-button]]:py-3",
+            hasBackground &&
+              "[&_[data-slot=sidebar-inner]]:bg-sidebar/70 [&_[data-slot=sidebar-inner]]:backdrop-blur-md"
+          )}
+        >
         <SidebarResizeHandle
           ariaLabel={t("shell.resizeSidebar")}
           onCommitWidth={actions.setSidebarWidth}
@@ -549,15 +552,18 @@ export const DefaultShell: SlotComponent<DefaultShellProps> = (props) => {
 
         {sidebarFooterNode !== null && <SidebarFooter>{sidebarFooterNode}</SidebarFooter>}
       </Sidebar>
+      )}
 
       <main
         ref={mainRef}
         data-shell-main=""
         className={cn(
-          "flex min-w-0 flex-1 flex-col overflow-x-hidden pt-[calc(3rem+var(--safe-area-inset-top,env(safe-area-inset-top,0px)))] md:overflow-auto md:pt-[var(--safe-area-inset-top,env(safe-area-inset-top))] md:pb-[var(--safe-area-inset-bottom,env(safe-area-inset-bottom))]",
-          chrome.fullscreen
-            ? "h-dvh min-h-0 overflow-hidden pb-[var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))] md:h-auto"
-            : "pb-[var(--mobile-bottom-nav-height,calc(4rem+var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))))]"
+          "flex min-w-0 flex-1 flex-col overflow-x-hidden md:overflow-auto md:pt-[var(--safe-area-inset-top,env(safe-area-inset-top))] md:pb-[var(--safe-area-inset-bottom,env(safe-area-inset-bottom))]",
+          hideChromeShell
+            ? "h-dvh min-h-0 overflow-hidden pt-[var(--safe-area-inset-top,env(safe-area-inset-top,0px))] pb-[var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))] md:h-auto"
+            : chrome.fullscreen
+              ? "h-dvh min-h-0 overflow-hidden pt-[calc(3rem+var(--safe-area-inset-top,env(safe-area-inset-top,0px)))] pb-[var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))] md:h-auto"
+              : "pt-[calc(3rem+var(--safe-area-inset-top,env(safe-area-inset-top,0px)))] pb-[var(--mobile-bottom-nav-height,calc(4rem+var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))))]"
         )}
       >
         <div
@@ -568,6 +574,7 @@ export const DefaultShell: SlotComponent<DefaultShellProps> = (props) => {
         </div>
 
         {/* One header tree for both breakpoints: fixed top bar on mobile, in-flow on desktop. */}
+        {!hideChromeShell && (
         <header
           data-shell-header=""
           className={cn(
@@ -652,14 +659,15 @@ export const DefaultShell: SlotComponent<DefaultShellProps> = (props) => {
             </div>
           </div>
         </header>
+        )}
 
         <div
           key={chrome.routeKey}
           data-shell-page-outlet=""
           data-shell-transition={outletTransitionMode === "none" ? undefined : outletTransitionMode}
           className={cn(
-            "flex flex-1 flex-col md:p-8",
-            chrome.fullscreen ? "min-h-0 overflow-hidden" : "p-4"
+            "flex flex-1 flex-col",
+            chrome.fullscreen ? "min-h-0 overflow-hidden" : "p-4 md:p-8"
           )}
         >
           {props.children}
